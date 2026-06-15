@@ -5,23 +5,21 @@
 #
 # Cette classe représente la fenêtre principale de l'application.
 #
-# Elle contient 
-# # - le titre du jeu
-# - les boutons principaux
-# - le menu
-# - l'affichage de la grille
-# - les messages pour l'utilisateur
+# Elle contient :
+#   - le titre du jeu
+#   - les boutons principaux
+#   - le menu
+#   - l'affichage de la grille
+#   - les messages pour l'utilisateur
+#
 # Important :
-# - la fenêtre ne modifie pas directement le modèle
-# - elle passe toujours par le contrôleur
+#   - la fenêtre ne modifie pas directement le modèle
+#   - elle passe toujours par le contrôleur
 # -----------------------------------------------------------------------------
-
-import os
 
 from PyQt6.QtWidgets import (
     QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QLabel, QPushButton, QMessageBox, QFileDialog, QInputDialog,
-    QScrollArea
+    QLabel, QPushButton, QMessageBox, QFileDialog
 )
 from PyQt6.QtCore import Qt, QTimer
 
@@ -29,10 +27,10 @@ from src.vue.grille_panel import GrillePanel
 from src.controleur.controleur import Controleur
 from src.modele.grille import Grille
 
+
 # -----------------------------------------------------------------------------
 # --- classe FenetrePrincipale -------------------------------------------------
 # -----------------------------------------------------------------------------
-
 class FenetrePrincipale(QMainWindow):
     """
     Fenêtre principale du jeu Néonaure.
@@ -51,20 +49,12 @@ class FenetrePrincipale(QMainWindow):
 
         # chemin de la grille actuellement chargée
         self.chemin_grille_actuelle: str | None = None
-
-        # dossier où seront enregistrées les parties sauvegardées
-        self.dossier_sauvegardes: str = "sauvegardes"
-
-        # création du dossier s'il n'existe pas
-        os.makedirs(self.dossier_sauvegardes, exist_ok=True)
-
-        # popup temporaire
+        
         self.popup_temporaire = None
 
         # paramètres de la fenêtre
         self.setWindowTitle("Jeu Néonaure")
-        self.resize(1200, 850)
-        self.setMinimumSize(900, 650)
+        self.resize(950, 720)
 
         # style général de l'application
         self.appliquer_style()
@@ -102,76 +92,37 @@ class FenetrePrincipale(QMainWindow):
         sous_titre.setStyleSheet("font-size: 16px; color: #D1D5DB;")
 
         layout_principal.addWidget(sous_titre)
-        
-        
-        # ---------------------------------------------------------------------
-        # --- chronomètre ------------------------------------------------------
-        # ---------------------------------------------------------------------
-        self.secondes_ecoulees = 0
-
-        self.label_chrono = QLabel("Temps : 00:00:00")
-        self.label_chrono.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label_chrono.setObjectName("labelChrono")
-
-        self.timer_chrono = QTimer(self)
-        self.timer_chrono.timeout.connect(self.mettre_a_jour_chrono)
-
-        layout_principal.addWidget(self.label_chrono)
-        
-        # ---------------------------------------------------------------------
-        # --- difficulté -------------------------------------------------------
-        # ---------------------------------------------------------------------
-        self.label_difficulte = QLabel("Difficulté : non définie")
-        self.label_difficulte.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label_difficulte.setObjectName("labelDifficulte")
-
-        layout_principal.addWidget(self.label_difficulte)
-        
-        # ---------------------------------------------------------------------
-        # --- vies / erreurs ---------------------------------------------------
-        # ---------------------------------------------------------------------
-        self.nb_erreurs = 0
-        self.max_erreurs = 3
-
-        self.label_vies = QLabel("Vies : ❤️❤️❤️   Erreurs : 0/3")
-        self.label_vies.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.label_vies.setObjectName("labelVies")
-
-        layout_principal.addWidget(self.label_vies)
-
 
         # ---------------------------------------------------------------------
         # --- boutons ----------------------------------------------------------
         # ---------------------------------------------------------------------
         layout_boutons = QHBoxLayout()
         layout_boutons.setSpacing(12)
-        layout_boutons.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         # création des boutons
-        self.btn_regles = QPushButton("Voir les règles")
-        self.btn_commencer = QPushButton("Commencer")
-        self.btn_choisir = QPushButton("Choisir la grille")
-        self.btn_continuer = QPushButton("Continuer")
-        self.btn_sauvegarder = QPushButton("Sauvegarder")
-        self.btn_resoudre = QPushButton("Résoudre")
-        self.btn_initialiser = QPushButton("Initialiser")
-        self.btn_quitter = QPushButton("Quitter")
+        btn_regles = QPushButton("Voir les règles")
+        btn_commencer = QPushButton("Commencer")
+        btn_choisir = QPushButton("Choisir la grille")
+        btn_sauvegarder = QPushButton("Sauvegarder")
+        btn_verifier = QPushButton("Vérifier")
+        btn_resoudre = QPushButton("Résoudre")
+        btn_initialiser = QPushButton("Initialiser")
+        btn_quitter = QPushButton("Quitter")
 
         # signaux et slots
-        self.btn_regles.clicked.connect(self.afficher_regles)
-        self.btn_commencer.clicked.connect(self.commencer)
-        self.btn_choisir.clicked.connect(self.choisir_grille)
-        self.btn_continuer.clicked.connect(self.continuer_partie)
-        self.btn_sauvegarder.clicked.connect(self.sauvegarder)
-        self.btn_resoudre.clicked.connect(self.resoudre)
-        self.btn_initialiser.clicked.connect(self.initialiser)
-        self.btn_quitter.clicked.connect(self.close)
+        btn_regles.clicked.connect(self.afficher_regles)
+        btn_commencer.clicked.connect(self.commencer)
+        btn_choisir.clicked.connect(self.choisir_grille)
+        btn_sauvegarder.clicked.connect(self.sauvegarder)
+        btn_verifier.clicked.connect(self.verifier)
+        btn_resoudre.clicked.connect(self.resoudre)
+        btn_initialiser.clicked.connect(self.initialiser)
+        btn_quitter.clicked.connect(self.close)
 
         # ajout des boutons dans le layout
         for bouton in [
-            self.btn_regles, self.btn_commencer, self.btn_choisir,
-            self.btn_continuer, self.btn_sauvegarder, self.btn_resoudre,
-            self.btn_initialiser, self.btn_quitter
+            btn_regles, btn_commencer, btn_choisir, btn_sauvegarder,
+            btn_verifier, btn_resoudre, btn_initialiser, btn_quitter
         ]:
             layout_boutons.addWidget(bouton)
 
@@ -203,16 +154,8 @@ class FenetrePrincipale(QMainWindow):
         # application du layout au widget central
         widget_central.setLayout(layout_principal)
 
-        # zone de défilement pour éviter que la grille soit coupée
-        scroll_area = QScrollArea()
-        scroll_area.setWidgetResizable(True)
-        scroll_area.setWidget(widget_central)
-
-        # ajout de la zone de défilement dans la fenêtre
-        self.setCentralWidget(scroll_area)
-
-        # état de départ de l'application
-        self.mettre_etat_accueil()
+        # ajout du widget central dans la fenêtre
+        self.setCentralWidget(widget_central)
 
     # -------------------------------------------------------------------------
     # --- style de la fenêtre --------------------------------------------------
@@ -229,27 +172,6 @@ class FenetrePrincipale(QMainWindow):
 
             QLabel {
                 color: white;
-            }
-            
-            QLabel#labelChrono {
-                color: #F9A8D4;
-                font-size: 17px;
-                font-weight: bold;
-                margin: 5px;
-            }
-            
-            QLabel#labelDifficulte {
-                color: #D1D5DB;
-                font-size: 15px;
-                font-weight: bold;
-                margin: 3px;
-            }
-            
-            QLabel#labelVies {
-                color: #FF4F93;
-                font-size: 16px;
-                font-weight: bold;
-                margin: 3px;
             }
 
             QPushButton {
@@ -306,7 +228,6 @@ class FenetrePrincipale(QMainWindow):
         # menu Fichier
         menu_fichier = menu_bar.addMenu("Fichier")
         menu_fichier.addAction("Choisir une grille", self.choisir_grille)
-        menu_fichier.addAction("Continuer une partie", self.continuer_partie)
         menu_fichier.addAction("Sauvegarder", self.sauvegarder)
         menu_fichier.addSeparator()
         menu_fichier.addAction("Quitter", self.close)
@@ -314,231 +235,13 @@ class FenetrePrincipale(QMainWindow):
         # menu Jeu
         menu_jeu = menu_bar.addMenu("Jeu")
         menu_jeu.addAction("Commencer", self.commencer)
+        menu_jeu.addAction("Vérifier", self.verifier)
         menu_jeu.addAction("Résoudre", self.resoudre)
         menu_jeu.addAction("Initialiser", self.initialiser)
 
         # menu Aide
         menu_aide = menu_bar.addMenu("Aide")
         menu_aide.addAction("Voir les règles", self.afficher_regles)
-
-    # -------------------------------------------------------------------------
-    # --- état accueil ---------------------------------------------------------
-    # -------------------------------------------------------------------------
-    def mettre_etat_accueil(self) -> None:
-        """
-        Affiche seulement le bouton Commencer au lancement.
-        """
-
-        self.btn_regles.hide()
-        self.btn_commencer.show()
-        self.btn_choisir.hide()
-        self.btn_continuer.hide()
-        self.btn_sauvegarder.hide()
-        self.btn_resoudre.hide()
-        self.btn_initialiser.hide()
-        self.btn_quitter.hide()
-
-        self.grille_panel.hide()
-        self.label_chrono.hide()
-        self.label_difficulte.hide()
-        self.label_vies.hide()
-
-        self.message.setText("Bienvenue dans Néonaure. Cliquez sur Commencer.")
-
-        self.btn_commencer.setMinimumWidth(250)
-        self.btn_commencer.setMinimumHeight(70)
-        
-    # -------------------------------------------------------------------------
-    # --- état choix de grille -------------------------------------------------
-    # -------------------------------------------------------------------------
-    def mettre_etat_choix_grille(self) -> None:
-        """
-        Affiche les boutons pour choisir ou continuer une partie.
-        """
-
-        self.btn_regles.show()
-        self.btn_commencer.hide()
-        self.btn_choisir.show()
-        self.btn_continuer.show()
-        self.btn_sauvegarder.hide()
-        self.btn_resoudre.hide()
-        self.btn_initialiser.hide()
-        self.btn_quitter.show()
-
-        self.grille_panel.hide()
-        self.label_chrono.hide()
-        self.label_difficulte.hide()
-        self.label_vies.hide()
-
-        self.message.setText("Choisissez une grille ou continuez une partie sauvegardée.")
-
-    # -------------------------------------------------------------------------
-    # --- état jeu -------------------------------------------------------------
-    # -------------------------------------------------------------------------
-    def mettre_etat_jeu(self) -> None:
-        """
-        Affiche les boutons utiles pendant la partie.
-        """
-
-        self.btn_regles.show()
-        self.btn_commencer.hide()
-        self.btn_choisir.show()
-        self.btn_continuer.show()
-        self.btn_sauvegarder.show()
-        self.btn_resoudre.show()
-        self.btn_initialiser.show()
-        self.btn_quitter.show()
-
-        self.grille_panel.show()
-        self.label_chrono.show()
-        self.label_difficulte.show()
-        self.label_vies.show()
-        
-    # -------------------------------------------------------------------------
-    # --- chronomètre ----------------------------------------------------------
-    # -------------------------------------------------------------------------
-    def demarrer_chrono(self) -> None:
-        """
-        Démarre ou redémarre le chronomètre de la partie.
-        """
-
-        self.secondes_ecoulees = 0
-        self.label_chrono.setText("Temps : 00:00:00")
-        self.timer_chrono.start(1000)
-
-    def arreter_chrono(self) -> None:
-        """
-        Arrête le chronomètre.
-        """
-
-        self.timer_chrono.stop()
-
-    def mettre_a_jour_chrono(self) -> None:
-        """
-        Met à jour l'affichage du chronomètre chaque seconde.
-        """
-
-        self.secondes_ecoulees += 1
-
-        heures = self.secondes_ecoulees // 3600
-        minutes = (self.secondes_ecoulees % 3600) // 60
-        secondes = self.secondes_ecoulees % 60
-
-        self.label_chrono.setText(f"Temps : {heures:02d}:{minutes:02d}:{secondes:02d}")
-        
-    
-    # -------------------------------------------------------------------------
-    # --- difficulté -----------------------------------------------------------
-    # -------------------------------------------------------------------------
-    def calculer_difficulte(self, grille: Grille) -> str:
-        """
-        Calcule la difficulté d'une grille selon le nombre de cases déjà remplies.
-        Plus il y a de cases remplies au départ, plus la grille est facile.
-        """
-
-        total_cases = grille.nb_lignes * grille.nb_colonnes
-        cases_remplies = 0
-
-        for y in range(grille.nb_lignes):
-            for x in range(grille.nb_colonnes):
-                case = grille.get_case(x, y)
-
-                if case.valeur != 0:
-                    cases_remplies += 1
-
-        pourcentage_rempli = cases_remplies / total_cases
-
-        if pourcentage_rempli >= 0.35:
-            return "Facile"
-        elif pourcentage_rempli >= 0.20:
-            return "Moyenne"
-        else:
-            return "Difficile"
-
-    def afficher_difficulte(self, difficulte: str) -> None:
-        """
-        Affiche la difficulté choisie par le joueur.
-        """
-
-        self.label_difficulte.setText(f"Difficulté choisie : {difficulte}")
-
-    def lister_grilles_par_difficulte(self, difficulte_voulue: str) -> list:
-        """
-        Retourne les grilles du dossier grilles qui correspondent à la difficulté choisie.
-        """
-
-        grilles_trouvees = []
-        dossier_grilles = "grilles"
-
-        if not os.path.exists(dossier_grilles):
-            return grilles_trouvees
-
-        for nom_fichier in os.listdir(dossier_grilles):
-            if not nom_fichier.endswith(".json"):
-                continue
-
-            chemin = os.path.join(dossier_grilles, nom_fichier)
-
-            try:
-                controleur_temporaire = Controleur()
-                grille = controleur_temporaire.charger_grille(chemin)
-
-                difficulte_grille = self.calculer_difficulte(grille)
-
-                if difficulte_grille == difficulte_voulue:
-                    grilles_trouvees.append(chemin)
-
-            except Exception as erreur:
-                print(f"Erreur avec la grille {nom_fichier} :", erreur)
-
-        return grilles_trouvees
-    
-    # -------------------------------------------------------------------------
-    # --- vies / erreurs -------------------------------------------------------
-    # -------------------------------------------------------------------------
-    def reinitialiser_vies(self) -> None:
-        """
-        Réinitialise le nombre d'erreurs au début d'une partie.
-        """
-
-        self.nb_erreurs = 0
-        self.mettre_a_jour_vies()
-        self.grille_panel.setEnabled(True)
-
-    def mettre_a_jour_vies(self) -> None:
-        """
-        Met à jour l'affichage des vies et du nombre d'erreurs.
-        """
-
-        vies_restantes = self.max_erreurs - self.nb_erreurs
-
-        coeurs = "❤️" * vies_restantes
-        coeurs_perdus = "🤍" * self.nb_erreurs
-
-        self.label_vies.setText(
-            f"Vies : {coeurs}{coeurs_perdus}   Erreurs : {self.nb_erreurs}/{self.max_erreurs}"
-        )
-
-    def ajouter_erreur(self) -> None:
-        """
-        Ajoute une erreur. Si le maximum est atteint, la partie est terminée.
-        """
-
-        self.nb_erreurs += 1
-        self.mettre_a_jour_vies()
-
-        if self.nb_erreurs >= self.max_erreurs:
-            self.arreter_chrono()
-            self.grille_panel.setEnabled(False)
-
-            QMessageBox.warning(
-                self,
-                "Partie terminée",
-                f"Vous avez fait {self.max_erreurs} erreurs.\nVous avez perdu la partie."
-            )
-
-            self.message.setText("Partie terminée : trop d'erreurs.")
-
 
     # -------------------------------------------------------------------------
     # --- affichage des règles -------------------------------------------------
@@ -563,172 +266,87 @@ class FenetrePrincipale(QMainWindow):
     # -------------------------------------------------------------------------
     def commencer(self) -> None:
         """
-        Passe de l'écran d'accueil au choix de la grille.
+        Affiche un message de début de partie.
         """
 
-        self.mettre_etat_choix_grille()
+        self.message.setText("Partie commencée. Choisissez une grille pour commencer à jouer.")
 
-        
     # -------------------------------------------------------------------------
     # --- choix d'une grille ---------------------------------------------------
     # -------------------------------------------------------------------------
     def choisir_grille(self) -> None:
         """
-        Permet au joueur de choisir un niveau de difficulté,
-        puis propose uniquement les grilles correspondant à ce niveau.
+        Ouvre une fenêtre pour choisir un fichier JSON.
         """
 
-        niveaux = ["Facile", "Moyenne", "Difficile"]
-
-        difficulte_choisie, ok = QInputDialog.getItem(
-            self,
-            "Choisir le niveau de jeu",
-            "Choisis une difficulté :",
-            niveaux,
-            0,
-            False
-        )
-
-        if not ok:
-            self.message.setText("Choix de la difficulté annulé.")
-            return
-
-        grilles_disponibles = self.lister_grilles_par_difficulte(difficulte_choisie)
-
-        if len(grilles_disponibles) == 0:
-            self.message.setText(f"Aucune grille trouvée pour le niveau {difficulte_choisie}.")
-            return
-
-        noms_grilles = []
-
-        for chemin in grilles_disponibles:
-            noms_grilles.append(os.path.basename(chemin))
-
-        nom_grille, ok = QInputDialog.getItem(
+        chemin, _ = QFileDialog.getOpenFileName(
             self,
             "Choisir une grille",
-            f"Grilles disponibles en niveau {difficulte_choisie} :",
-            noms_grilles,
-            0,
-            False
+            "grilles",
+            "Fichiers JSON (*.json)"
         )
 
-        if not ok:
-            self.message.setText("Choix de la grille annulé.")
+        # si l'utilisateur annule
+        if chemin == "":
+            self.message.setText("Aucune grille sélectionnée.")
             return
 
-        index = noms_grilles.index(nom_grille)
-        chemin = grilles_disponibles[index]
-
+        # chargement de la grille
         try:
             grille = self.controleur.charger_grille(chemin)
-            self.chemin_grille_actuelle = chemin
-            self.afficher_grille_modele(grille)
-            self.afficher_difficulte(difficulte_choisie)
-            self.mettre_etat_jeu()
-            self.demarrer_chrono()
-            self.reinitialiser_vies()
 
-            self.message.setText(f"Grille chargée : {nom_grille}")
+            self.chemin_grille_actuelle = chemin
+
+            self.afficher_grille_modele(grille)
+
+            self.message.setText(f"Grille chargée : {chemin}")
 
         except Exception as erreur:
             self.message.setText("Erreur : impossible de charger la grille.")
             print(erreur)
-
-
 
     # -------------------------------------------------------------------------
     # --- sauvegarde de la grille ----------------------------------------------
     # -------------------------------------------------------------------------
     def sauvegarder(self) -> None:
         """
-        Sauvegarde la partie dans le dossier sauvegardes de l'application.
+        Sauvegarde la grille actuelle dans un fichier JSON.
         """
 
-        if self.controleur.get_grille() is None:
-            self.message.setText("Impossible de sauvegarder : aucune grille chargée.")
-            return
-
-        nom, ok = QInputDialog.getText(
+        chemin, _ = QFileDialog.getSaveFileName(
             self,
-            "Sauvegarder la partie",
-            "Nom de la sauvegarde :"
+            "Sauvegarder la grille",
+            "grilles/grille_sauvegardee.json",
+            "Fichiers JSON (*.json)"
         )
 
-        if not ok or nom.strip() == "":
+        # si l'utilisateur annule
+        if chemin == "":
             self.message.setText("Sauvegarde annulée.")
             return
 
-        nom = nom.strip()
-
-        if not nom.endswith(".json"):
-            nom = nom + ".json"
-
-        chemin = os.path.join(self.dossier_sauvegardes, nom)
-
+        # demande de sauvegarde au contrôleur
         reussi = self.controleur.sauvegarder_grille(chemin)
 
         if reussi:
-            self.chemin_grille_actuelle = chemin
-            self.message.setText(f"Partie sauvegardée : {nom}")
+            self.message.setText(f"Grille sauvegardée : {chemin}")
         else:
-            self.message.setText("Erreur : la partie n'a pas pu être sauvegardée.")
+            self.message.setText("Impossible de sauvegarder : aucune grille chargée.")
 
     # -------------------------------------------------------------------------
-    # --- continuer une partie sauvegardée -------------------------------------
+    # --- vérification de la grille --------------------------------------------
     # -------------------------------------------------------------------------
-    def continuer_partie(self) -> None:
+    def verifier(self) -> None:
         """
-        Charge une partie sauvegardée depuis le dossier sauvegardes.
+        Vérifie si la grille respecte les règles du jeu.
         """
 
-        fichiers = []
+        resultat = self.controleur.verifier_grille()
 
-        for fichier in os.listdir(self.dossier_sauvegardes):
-            if fichier.endswith(".json"):
-                fichiers.append(fichier)
-
-        if len(fichiers) == 0:
-            self.message.setText("Aucune partie sauvegardée trouvée.")
-            return
-
-        nom_fichier, ok = QInputDialog.getItem(
-            self,
-            "Continuer une partie",
-            "Choisis une sauvegarde :",
-            fichiers,
-            0,
-            False
-        )
-
-        if not ok:
-            self.message.setText("Chargement annulé.")
-            return
-
-        chemin = os.path.join(self.dossier_sauvegardes, nom_fichier)
-
-        try:
-            grille = self.controleur.charger_grille(chemin)
-
-            self.chemin_grille_actuelle = chemin
-
-            self.afficher_grille_modele(grille)
-            
-            difficulte = self.calculer_difficulte(grille)
-            self.afficher_difficulte(difficulte)
-
-            self.mettre_etat_jeu()
-
-            self.demarrer_chrono()
-            
-            self.reinitialiser_vies()
-            
-
-            self.message.setText(f"Partie chargée : {nom_fichier}")
-
-        except Exception as erreur:
-            self.message.setText("Erreur : impossible de charger la sauvegarde.")
-            print(erreur)
+        if resultat:
+            self.message.setText("La grille est valide.")
+        else:
+            self.message.setText("La grille n'est pas encore valide.")
 
     # -------------------------------------------------------------------------
     # --- résolution de la grille ----------------------------------------------
@@ -742,7 +360,6 @@ class FenetrePrincipale(QMainWindow):
 
         if reussi:
             self.afficher_grille_modele(self.controleur.get_grille())
-            self.mettre_etat_jeu()
             self.message.setText("Grille résolue.")
         else:
             self.message.setText("Aucune solution trouvée ou aucune grille chargée.")
@@ -755,27 +372,21 @@ class FenetrePrincipale(QMainWindow):
         Recharge la grille depuis le fichier JSON d'origine.
         """
 
+        # aucune grille chargée
         if self.controleur.get_grille() is None:
             self.message.setText("Aucune grille à initialiser.")
             return
 
+        # aucun chemin connu
         if self.chemin_grille_actuelle is None:
             self.message.setText("Impossible de réinitialiser : aucun fichier connu.")
             return
 
+        # rechargement de la grille
         try:
             grille = self.controleur.charger_grille(self.chemin_grille_actuelle)
 
             self.afficher_grille_modele(grille)
-            
-            difficulte = self.calculer_difficulte(grille)
-            self.afficher_difficulte(difficulte)
-
-            self.mettre_etat_jeu()
-
-            self.demarrer_chrono()
-            
-            self.reinitialiser_vies()
 
             self.message.setText("Grille réinitialisée.")
 
@@ -795,19 +406,24 @@ class FenetrePrincipale(QMainWindow):
         fixes: list = []
         motifs: list = []
 
+        # parcours des lignes
         for y in range(grille.nb_lignes):
 
             ligne_valeurs = []
             ligne_fixes = []
             ligne_motifs = []
 
+            # parcours des colonnes
             for x in range(grille.nb_colonnes):
 
+                # récupération de la case du modèle
                 case = grille.get_case(x, y)
 
+                # récupération de la valeur et de l'état fixe
                 ligne_valeurs.append(case.valeur)
                 ligne_fixes.append(case.fixe)
 
+                # récupération du motif de la case
                 motif = grille.trouver_motif_de_case(case)
 
                 if motif is None:
@@ -819,6 +435,7 @@ class FenetrePrincipale(QMainWindow):
             fixes.append(ligne_fixes)
             motifs.append(ligne_motifs)
 
+        # demande d'affichage au panneau de grille
         self.grille_panel.afficher_grille(
             grille.nb_lignes,
             grille.nb_colonnes,
@@ -837,19 +454,39 @@ class FenetrePrincipale(QMainWindow):
         Renvoie le popup créé pour pouvoir le fermer après.
         """
 
+        # on ferme tous les anciens popups encore ouverts
         for popup in self.findChildren(QMessageBox):
             popup.close()
             popup.deleteLater()
 
+        # création du nouveau popup
         popup = QMessageBox(self)
         popup.setWindowTitle(titre)
         popup.setText(message)
+
+        # pas de bouton OK
         popup.setStandardButtons(QMessageBox.StandardButton.NoButton)
+
+        # le popup ne bloque pas l'application
         popup.setModal(False)
+
+        # affichage du popup
         popup.show()
 
         return popup
+        
+    # -------------------------------------------------------------------------
+    # --- fermeture du popup temporaire ----------------------------------------
+    # -------------------------------------------------------------------------
+    def fermer_popup_temporaire(self) -> None:
+        """
+        Ferme le popup temporaire.
+        """
 
+        if self.popup_temporaire is not None:
+            self.popup_temporaire.close()
+            self.popup_temporaire = None
+            
     # -------------------------------------------------------------------------
     # --- fin d'une erreur -----------------------------------------------------
     # -------------------------------------------------------------------------
@@ -858,13 +495,17 @@ class FenetrePrincipale(QMainWindow):
         Ferme le popup d'erreur et efface la valeur fausse.
         """
 
+        # fermeture du popup
         popup.close()
         popup.deleteLater()
 
+        # effacement de la valeur fausse
         self.controleur.effacer_case_si_valeur(x, y, valeur)
 
+        # réaffichage de la grille
         self.afficher_grille_modele(self.controleur.get_grille())
 
+        # message en bas
         self.message.setText("La valeur fausse a été retirée.")
 
     # -------------------------------------------------------------------------
@@ -873,27 +514,40 @@ class FenetrePrincipale(QMainWindow):
     def modifier_case(self, x: int, y: int, valeur: int) -> None:
         """
         Demande au contrôleur de modifier une case.
+
+        Si la valeur est bonne :
+        - elle reste affichée
+        - le popup disparaît après 2 secondes
+
+        Si la valeur est fausse :
+        - elle s'affiche d'abord
+        - le popup apparaît pendant 2 secondes
+        - la valeur disparaît en même temps que le popup
         """
 
+        # demande de modification au contrôleur
         reussi, message = self.controleur.modifier_case(x, y, valeur)
 
+        # la valeur s'affiche tout de suite
         self.afficher_grille_modele(self.controleur.get_grille())
 
+        # message en bas
         self.message.setText(message)
 
+        # si la valeur est bonne
         if reussi:
             popup = self.afficher_popup_temporaire("Validation", message)
 
-            QTimer.singleShot(
-                5000,
-                lambda: (popup.close(), popup.deleteLater())
-            )
+            # fermeture automatique après 2 secondes
+            QTimer.singleShot(5000, lambda: (popup.close(), popup.deleteLater()))
 
+        # si la valeur est fausse
         else:
-            self.ajouter_erreur()
-
             popup = self.afficher_popup_temporaire("Erreur", message)
 
+            # après 2 secondes :
+            # - le popup se ferme
+            # - la valeur fausse disparaît
             QTimer.singleShot(
                 5000,
                 lambda: self.terminer_erreur_case(popup, x, y, valeur)

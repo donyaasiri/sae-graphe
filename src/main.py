@@ -1,24 +1,11 @@
-# -----------------------------------------------------------------------------
-# --- main.py ------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-
 import sys
-
 from PyQt6.QtWidgets import QApplication
+from vue.fenetre_principale import FenetrePrincipale
 
-from src.vue.fenetre_principale import FenetrePrincipale
 
+app = QApplication(sys.argv)
 
-# -----------------------------------------------------------------------------
-# --- main ---------------------------------------------------------------------
-# -----------------------------------------------------------------------------
-if __name__ == "__main__":
+fenetre = FenetrePrincipale()
+fenetre.show()
 
-    print("--- lancement de Néonaure ---")
-
-    app = QApplication(sys.argv)
-
-    fenetre = FenetrePrincipale()
-    fenetre.show()
-
-    sys.exit(app.exec())
+sys.exit(app.exec())
