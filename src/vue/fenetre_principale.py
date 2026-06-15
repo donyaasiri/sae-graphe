@@ -19,8 +19,9 @@
 import os
 
 from PyQt6.QtWidgets import (
-QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-QLabel, QPushButton, QMessageBox, QFileDialog, QInputDialog
+    QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
+    QLabel, QPushButton, QMessageBox, QFileDialog, QInputDialog,
+    QScrollArea
 )
 from PyQt6.QtCore import Qt, QTimer
 
@@ -29,16 +30,13 @@ from src.controleur.controleur import Controleur
 from src.modele.grille import Grille
 
 # -----------------------------------------------------------------------------
-
 # --- classe FenetrePrincipale -------------------------------------------------
-
 # -----------------------------------------------------------------------------
 
 class FenetrePrincipale(QMainWindow):
     """
     Fenêtre principale du jeu Néonaure.
     """
-
 
     # -------------------------------------------------------------------------
     # --- constructeur ---------------------------------------------------------
@@ -65,7 +63,8 @@ class FenetrePrincipale(QMainWindow):
 
         # paramètres de la fenêtre
         self.setWindowTitle("Jeu Néonaure")
-        self.resize(950, 720)
+        self.resize(1200, 850)
+        self.setMinimumSize(900, 650)
 
         # style général de l'application
         self.appliquer_style()
@@ -118,6 +117,27 @@ class FenetrePrincipale(QMainWindow):
         self.timer_chrono.timeout.connect(self.mettre_a_jour_chrono)
 
         layout_principal.addWidget(self.label_chrono)
+        
+        # ---------------------------------------------------------------------
+        # --- difficulté -------------------------------------------------------
+        # ---------------------------------------------------------------------
+        self.label_difficulte = QLabel("Difficulté : non définie")
+        self.label_difficulte.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label_difficulte.setObjectName("labelDifficulte")
+
+        layout_principal.addWidget(self.label_difficulte)
+        
+        # ---------------------------------------------------------------------
+        # --- vies / erreurs ---------------------------------------------------
+        # ---------------------------------------------------------------------
+        self.nb_erreurs = 0
+        self.max_erreurs = 3
+
+        self.label_vies = QLabel("Vies : ❤️❤️❤️   Erreurs : 0/3")
+        self.label_vies.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.label_vies.setObjectName("labelVies")
+
+        layout_principal.addWidget(self.label_vies)
 
 
         # ---------------------------------------------------------------------
@@ -183,8 +203,13 @@ class FenetrePrincipale(QMainWindow):
         # application du layout au widget central
         widget_central.setLayout(layout_principal)
 
-        # ajout du widget central dans la fenêtre
-        self.setCentralWidget(widget_central)
+        # zone de défilement pour éviter que la grille soit coupée
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+        scroll_area.setWidget(widget_central)
+
+        # ajout de la zone de défilement dans la fenêtre
+        self.setCentralWidget(scroll_area)
 
         # état de départ de l'application
         self.mettre_etat_accueil()
@@ -211,6 +236,20 @@ class FenetrePrincipale(QMainWindow):
                 font-size: 17px;
                 font-weight: bold;
                 margin: 5px;
+            }
+            
+            QLabel#labelDifficulte {
+                color: #D1D5DB;
+                font-size: 15px;
+                font-weight: bold;
+                margin: 3px;
+            }
+            
+            QLabel#labelVies {
+                color: #FF4F93;
+                font-size: 16px;
+                font-weight: bold;
+                margin: 3px;
             }
 
             QPushButton {
@@ -301,6 +340,8 @@ class FenetrePrincipale(QMainWindow):
 
         self.grille_panel.hide()
         self.label_chrono.hide()
+        self.label_difficulte.hide()
+        self.label_vies.hide()
 
         self.message.setText("Bienvenue dans Néonaure. Cliquez sur Commencer.")
 
@@ -326,6 +367,8 @@ class FenetrePrincipale(QMainWindow):
 
         self.grille_panel.hide()
         self.label_chrono.hide()
+        self.label_difficulte.hide()
+        self.label_vies.hide()
 
         self.message.setText("Choisissez une grille ou continuez une partie sauvegardée.")
 
@@ -348,6 +391,8 @@ class FenetrePrincipale(QMainWindow):
 
         self.grille_panel.show()
         self.label_chrono.show()
+        self.label_difficulte.show()
+        self.label_vies.show()
         
     # -------------------------------------------------------------------------
     # --- chronomètre ----------------------------------------------------------
@@ -381,6 +426,118 @@ class FenetrePrincipale(QMainWindow):
 
         self.label_chrono.setText(f"Temps : {heures:02d}:{minutes:02d}:{secondes:02d}")
         
+    
+    # -------------------------------------------------------------------------
+    # --- difficulté -----------------------------------------------------------
+    # -------------------------------------------------------------------------
+    def calculer_difficulte(self, grille: Grille) -> str:
+        """
+        Calcule la difficulté d'une grille selon le nombre de cases déjà remplies.
+        Plus il y a de cases remplies au départ, plus la grille est facile.
+        """
+
+        total_cases = grille.nb_lignes * grille.nb_colonnes
+        cases_remplies = 0
+
+        for y in range(grille.nb_lignes):
+            for x in range(grille.nb_colonnes):
+                case = grille.get_case(x, y)
+
+                if case.valeur != 0:
+                    cases_remplies += 1
+
+        pourcentage_rempli = cases_remplies / total_cases
+
+        if pourcentage_rempli >= 0.35:
+            return "Facile"
+        elif pourcentage_rempli >= 0.20:
+            return "Moyenne"
+        else:
+            return "Difficile"
+
+    def afficher_difficulte(self, difficulte: str) -> None:
+        """
+        Affiche la difficulté choisie par le joueur.
+        """
+
+        self.label_difficulte.setText(f"Difficulté choisie : {difficulte}")
+
+    def lister_grilles_par_difficulte(self, difficulte_voulue: str) -> list:
+        """
+        Retourne les grilles du dossier grilles qui correspondent à la difficulté choisie.
+        """
+
+        grilles_trouvees = []
+        dossier_grilles = "grilles"
+
+        if not os.path.exists(dossier_grilles):
+            return grilles_trouvees
+
+        for nom_fichier in os.listdir(dossier_grilles):
+            if not nom_fichier.endswith(".json"):
+                continue
+
+            chemin = os.path.join(dossier_grilles, nom_fichier)
+
+            try:
+                controleur_temporaire = Controleur()
+                grille = controleur_temporaire.charger_grille(chemin)
+
+                difficulte_grille = self.calculer_difficulte(grille)
+
+                if difficulte_grille == difficulte_voulue:
+                    grilles_trouvees.append(chemin)
+
+            except Exception as erreur:
+                print(f"Erreur avec la grille {nom_fichier} :", erreur)
+
+        return grilles_trouvees
+    
+    # -------------------------------------------------------------------------
+    # --- vies / erreurs -------------------------------------------------------
+    # -------------------------------------------------------------------------
+    def reinitialiser_vies(self) -> None:
+        """
+        Réinitialise le nombre d'erreurs au début d'une partie.
+        """
+
+        self.nb_erreurs = 0
+        self.mettre_a_jour_vies()
+        self.grille_panel.setEnabled(True)
+
+    def mettre_a_jour_vies(self) -> None:
+        """
+        Met à jour l'affichage des vies et du nombre d'erreurs.
+        """
+
+        vies_restantes = self.max_erreurs - self.nb_erreurs
+
+        coeurs = "❤️" * vies_restantes
+        coeurs_perdus = "🤍" * self.nb_erreurs
+
+        self.label_vies.setText(
+            f"Vies : {coeurs}{coeurs_perdus}   Erreurs : {self.nb_erreurs}/{self.max_erreurs}"
+        )
+
+    def ajouter_erreur(self) -> None:
+        """
+        Ajoute une erreur. Si le maximum est atteint, la partie est terminée.
+        """
+
+        self.nb_erreurs += 1
+        self.mettre_a_jour_vies()
+
+        if self.nb_erreurs >= self.max_erreurs:
+            self.arreter_chrono()
+            self.grille_panel.setEnabled(False)
+
+            QMessageBox.warning(
+                self,
+                "Partie terminée",
+                f"Vous avez fait {self.max_erreurs} erreurs.\nVous avez perdu la partie."
+            )
+
+            self.message.setText("Partie terminée : trop d'erreurs.")
 
 
     # -------------------------------------------------------------------------
@@ -411,41 +568,74 @@ class FenetrePrincipale(QMainWindow):
 
         self.mettre_etat_choix_grille()
 
+        
     # -------------------------------------------------------------------------
     # --- choix d'une grille ---------------------------------------------------
     # -------------------------------------------------------------------------
     def choisir_grille(self) -> None:
         """
-        Ouvre une fenêtre pour choisir un fichier JSON.
+        Permet au joueur de choisir un niveau de difficulté,
+        puis propose uniquement les grilles correspondant à ce niveau.
         """
 
-        chemin, _ = QFileDialog.getOpenFileName(
+        niveaux = ["Facile", "Moyenne", "Difficile"]
+
+        difficulte_choisie, ok = QInputDialog.getItem(
             self,
-            "Choisir une grille",
-            "grilles",
-            "Fichiers JSON (*.json)"
+            "Choisir le niveau de jeu",
+            "Choisis une difficulté :",
+            niveaux,
+            0,
+            False
         )
 
-        if chemin == "":
-            self.message.setText("Aucune grille sélectionnée.")
+        if not ok:
+            self.message.setText("Choix de la difficulté annulé.")
             return
+
+        grilles_disponibles = self.lister_grilles_par_difficulte(difficulte_choisie)
+
+        if len(grilles_disponibles) == 0:
+            self.message.setText(f"Aucune grille trouvée pour le niveau {difficulte_choisie}.")
+            return
+
+        noms_grilles = []
+
+        for chemin in grilles_disponibles:
+            noms_grilles.append(os.path.basename(chemin))
+
+        nom_grille, ok = QInputDialog.getItem(
+            self,
+            "Choisir une grille",
+            f"Grilles disponibles en niveau {difficulte_choisie} :",
+            noms_grilles,
+            0,
+            False
+        )
+
+        if not ok:
+            self.message.setText("Choix de la grille annulé.")
+            return
+
+        index = noms_grilles.index(nom_grille)
+        chemin = grilles_disponibles[index]
 
         try:
             grille = self.controleur.charger_grille(chemin)
-
             self.chemin_grille_actuelle = chemin
-
             self.afficher_grille_modele(grille)
-
+            self.afficher_difficulte(difficulte_choisie)
             self.mettre_etat_jeu()
-
             self.demarrer_chrono()
+            self.reinitialiser_vies()
 
-            self.message.setText(f"Grille chargée : {chemin}")
+            self.message.setText(f"Grille chargée : {nom_grille}")
 
         except Exception as erreur:
             self.message.setText("Erreur : impossible de charger la grille.")
             print(erreur)
+
+
 
     # -------------------------------------------------------------------------
     # --- sauvegarde de la grille ----------------------------------------------
@@ -523,10 +713,16 @@ class FenetrePrincipale(QMainWindow):
             self.chemin_grille_actuelle = chemin
 
             self.afficher_grille_modele(grille)
+            
+            difficulte = self.calculer_difficulte(grille)
+            self.afficher_difficulte(difficulte)
 
             self.mettre_etat_jeu()
 
             self.demarrer_chrono()
+            
+            self.reinitialiser_vies()
+            
 
             self.message.setText(f"Partie chargée : {nom_fichier}")
 
@@ -571,10 +767,15 @@ class FenetrePrincipale(QMainWindow):
             grille = self.controleur.charger_grille(self.chemin_grille_actuelle)
 
             self.afficher_grille_modele(grille)
+            
+            difficulte = self.calculer_difficulte(grille)
+            self.afficher_difficulte(difficulte)
 
             self.mettre_etat_jeu()
 
             self.demarrer_chrono()
+            
+            self.reinitialiser_vies()
 
             self.message.setText("Grille réinitialisée.")
 
@@ -689,6 +890,8 @@ class FenetrePrincipale(QMainWindow):
             )
 
         else:
+            self.ajouter_erreur()
+
             popup = self.afficher_popup_temporaire("Erreur", message)
 
             QTimer.singleShot(
